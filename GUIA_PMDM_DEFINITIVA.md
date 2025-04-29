@@ -2774,3 +2774,132 @@ Hemos cubierto el ciclo completo: empezamos diseñando interfaces, manejamos nav
 | **Hilos & Conectividad**           | Background threads, OkHttp+Gson                         |    |
 | **Persistencia**                   | SharedPrefs, archivos, SQLite, Room                     |    |
 | **Permisos & Debug & Publicación** | Runtime permissions, Logcat, firma de APK               |    |
+
+# Guía Rápida de Referencia PMDM
+
+## Unidad 1 – Diseño de Interfaces
+
+### Conceptos básicos: View, ViewGroup y dp/sp
+- **View:** cualquier elemento UI (botón, texto, imagen).  
+- **ViewGroup:** contenedor que organiza Views (LinearLayout, ConstraintLayout, etc.)  
+- **dp vs sp:**  
+  - `dp` (density-independent pixels) para márgenes, anchos y altos.  
+  - `sp` (scale-independent pixels) sólo para `textSize`, respeta la preferencia de usuario.
+
+### Layouts comunes  
+- **LinearLayout:** apila Views en vertical u horizontal; usa `layout_weight` para repartir espacio.  
+- **RelativeLayout:** posiciona Views relativas a otras Views o al padre.  
+- **ConstraintLayout:** layouts flexibles con constraints horizontales y verticales; reemplaza anidamientos excesivos.  
+- **FrameLayout:** apila Views; útil para superponer.  
+- **TableLayout & GridLayout:** diseños en tabla o cuadrícula.  
+- **ScrollView:** contenedor desplazable para contenido extenso.
+
+### Ejemplo práctico: Listado de Países filtrable
+1. **Modelo `Pais.java`** con atributos y `toString()`.  
+2. **Fuente de datos `ObtenerDatos.java`** que genera la lista y filtra según `numMostrar`.  
+3. **Layout `activity_main.xml`**: EditText + Button + TextView mensaje + ListView.  
+4. **`MainActivity.java`**:  
+   - Inicializa `ArrayAdapter<Pais>` con todos (–1).  
+   - `btnFiltrar.setOnClickListener` lee número:  
+     - Vacío → muestra todos + mensaje.  
+     - Número → filtra N países + oculta mensaje.  
+   - `notifyDataSetChanged()` para refrescar.
+
+## Unidad 2 – Actividades e Intents
+
+### Ciclo de vida de una Activity
+- `onCreate` → `onStart` → `onResume` (en primer plano)  
+- → `onPause` → `onStop` (en background) → `onDestroy`  
+- (Opcional `onRestart` si regresa tras Stop)
+
+### Intents explícitos e implícitos
+- **Explícito:** `new Intent(this, OtraActivity.class)` + `startActivity`.  
+- **Implícito:** `new Intent(ACTION_VIEW, Uri.parse(...))`, sistema elige app adecuada.
+
+### startActivityForResult  
+- Lanzar con código: `startActivityForResult(intent, REQ)`.  
+- En Activity B: `setResult(RESULT_OK, intentDatos)` + `finish()`.  
+- En A: `onActivityResult(requestCode, resultCode, data)`.
+
+### Menús y diálogos
+- **OptionsMenu:** define en `/res/menu/`, infla en `onCreateOptionsMenu`, maneja en `onOptionsItemSelected`.
+- **Contextual:** `registerForContextMenu(view)`, `onCreateContextMenu`, `onContextItemSelected`.
+- **AlertDialog:** `new AlertDialog.Builder(this)...show()`; `.setItems`, `.setSingleChoiceItems`, etc.
+
+### Localización
+- Textos en `res/values/strings.xml` y `res/values-en/strings.xml`.  
+- Imágenes localizadas en `drawable-es/`, `drawable-en/`.
+
+## Unidad 3 – Fragmentos y UI Adaptativa
+
+### Concepto y ciclo de vida de Fragment
+- Fragment vive dentro de una Activity; equivalente "mini-Activity".  
+- Callbacks: `onAttach` → `onCreate` → `onCreateView` → `onViewCreated` → `onStart` → `onResume` → `onPause` → `onStop` → `onDestroyView` → `onDestroy` → `onDetach`.  
+- Inflado de layout en `onCreateView`.
+
+### Layouts adaptativos (-sw600dp)
+- Carpetas `layout-sw600dp/` para tablets (≥600dp).  
+- Móvil: sólo fragment Lista → nueva Activity detalle.  
+- Tablet: layout horizontal con dos contenedores, lista + detalle lado a lado.
+
+### Proyecto Master-Detail de Países
+- **ListadoFragment:** ListView de países, interfaz `OnPaisSelectedListener` para notificar selección.  
+- **DetalleFragment:** muestra datos de un `Pais`.  
+- **MainActivity:** implementa listener:  
+  - Si existe contenedor detalle → `replace` fragment detalle.  
+  - Si no → `startActivity` a DetalleActivity.  
+- **DetalleActivity:** contenedor FrameLayout para DetalleFragment en móvil.
+
+## Unidad 4 – Hilos, Conectividad y REST
+
+### UI Thread vs background threads
+- **UI Thread:** maneja toda la UI; bloqueos causan ANR.  
+- **Background:** tareas largas (red, disco, CPU) en hilos secundarios; luego publicar resultados en UI Thread.
+
+### AsyncTask y Executors
+- **AsyncTask (deprecated en API recientes):** `doInBackground` + `onPostExecute`.  
+- **Executors:** `ExecutorService` con `submit(Runnable/Callable)`, mejor control de pools.
+
+### Consumo de REST con OkHttp + Gson
+1. Agregar permisos INTERNET y config `network_security_config` si es HTTP.  
+2. Dependencias: OkHttp y Gson en Gradle.  
+3. `OkHttpClient` + `Request.Builder().url(...).build()` + `client.newCall().enqueue(callback)`.  
+4. En `onResponse`, parsear JSON con `Gson.fromJson(responseData, new TypeToken<...>(){})`.  
+5. Enviar resultados a UI con `runOnUiThread`.
+
+## Unidad 5 – Persistencia
+
+### SharedPreferences
+- Almacenan pares clave-valor en XML interno; privados a la app.  
+- Ejemplo: guardar última sesión, modo oscuro.
+
+### Ficheros (internos, externos, raw/assets)
+- **raw/assets:** lectura de recursos `R.raw` o `AssetManager`.  
+- **Internal Storage** (`openFileOutput`/`openFileInput`): privado y borrado en uninstall.  
+- **External Storage** (`File` + `Environment`): público o en `getExternalFilesDir`, requiere permisos en API<29.
+
+### SQLiteOpenHelper y CRUD
+- Crear clase que extienda `SQLiteOpenHelper`, implementar `onCreate` y `onUpgrade`.  
+- Usar `getWritableDatabase()` + `insert`, `query`, `update`, `delete`.  
+- Manejar transacciones y cerrar DB.
+
+### Introducción a Room
+- DAO + Entities + Database class.  
+- Anotaciones `@Entity`, `@Dao`, `@Database`.  
+- Ventajas: comprobación en compilación, menos boilerplate.
+
+## Unidad 6 – Permisos, Depuración y Publicación
+
+### Permisos en manifest vs runtime
+- `AndroidManifest.xml`: `<uses-permission>`.  
+- Permisos peligrosos (`CAMERA`, `LOCATION`, etc.) requieren `requestPermissions(...)` en runtime y revisar con `shouldShowRequestPermissionRationale`.
+
+### Depuración: Logcat y breakpoints
+- Insertar `Log.d/e/...` y ver en Logcat de Android Studio o `adb logcat`.  
+- Puntos de interrupción en Android Studio (Ctrl+F8) y usar Debugger (Step Over, Into).
+
+### Firma de APK y Google Play
+- **Keystore:** almacén de claves privadas; úsalo para firmar release APK.  
+- Generar clave (`keytool` o Android Studio wizard) y configurar `build.gradle`.  
+- Subir APK/AAB a Google Play Console, completar ficha, clasificaciones, privacidad.  
+- Firebase Crashlytics para logging remoto en producción.
