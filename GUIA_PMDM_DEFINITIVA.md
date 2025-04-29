@@ -2765,7 +2765,7 @@ Hemos cubierto el ciclo completo: empezamos diseñando interfaces, manejamos nav
 ---
 
 ## Resumen Final y Tabla de Checklist
-<details>
+
 | Categoría                          | Elementos Clave                                         | ✅ |
 |------------------------------------|---------------------------------------------------------|----|
 | **Diseño de Interfaces**           | dp/sp, Layouts, ejemplo filtro                          |    |
@@ -2903,4 +2903,3 @@ Hemos cubierto el ciclo completo: empezamos diseñando interfaces, manejamos nav
 - Generar clave (`keytool` o Android Studio wizard) y configurar `build.gradle`.  
 - Subir APK/AAB a Google Play Console, completar ficha, clasificaciones, privacidad.  
 - Firebase Crashlytics para logging remoto en producción.
-</details>
