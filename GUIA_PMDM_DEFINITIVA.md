@@ -2763,9 +2763,9 @@ Hemos cubierto el ciclo completo: empezamos diseñando interfaces, manejamos nav
    <small>*(Primero, obtener una cuenta de desarrollador en Google Play Console. Luego, preparar la ficha de la app: título, descripción, imágenes, categoría, etc. En Play Console crear una nueva aplicación, subir el APK firmado (o App Bundle) en un release (puede ser interno, cerrado o producción), completar la información requerida (clasificación de contenido, privacidad, etc.), y finalmente enviar la app a revisión. Una vez aprobada por Google, estará disponible en Play Store según la distribución seleccionada.)*</small>
 
 ---
-<details>
-## Resumen Final y Tabla de Checklist
 
+## Resumen Final y Tabla de Checklist
+<details>
 | Categoría                          | Elementos Clave                                         | ✅ |
 |------------------------------------|---------------------------------------------------------|----|
 | **Diseño de Interfaces**           | dp/sp, Layouts, ejemplo filtro                          |    |
